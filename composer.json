@@ -1,5 +1,5 @@
 {
-  "name": "sergey-preobrazhensky/phoneGeoData",
+  "name": "sergey-preobrazhensky/phone-geo-data",
   "description": "Get country, region and timezone by phone number",
   "minimum-stability": "stable",
   "license": "proprietary",
