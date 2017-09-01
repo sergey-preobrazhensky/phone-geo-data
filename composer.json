@@ -1,5 +1,15 @@
 {
-  "require": {
+  "name": "sergey-preobrazhensky/phoneGeoData",
+  "description": "Get country, region and timezone by phone number",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Sergey Preobrazhensky",
+      "email": "yavi.gm@gmail.com"
+    }
+  ],
+  "require-dev": {
     "phpunit/phpunit": "5.7.21"
   }
 }
