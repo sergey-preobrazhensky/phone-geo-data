@@ -1,6 +1,8 @@
 <?php
 use PHPUnit\Framework\TestCase;
-include_once __DIR__.'/../PhoneGeoDataGetter.php';
+use SergeyPreobrazhensky\PhoneGeoData\PhoneGeoDataGetter;
+
+include_once __DIR__.'/../src/autoload.php';
 /**
  *
  */

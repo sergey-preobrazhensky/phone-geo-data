@@ -1,5 +1,5 @@
 <?php
-
+namespace SergeyPreobrazhensky\PhoneGeoData;
 /**
  *
  */

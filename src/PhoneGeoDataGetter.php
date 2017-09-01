@@ -1,6 +1,5 @@
 <?php
-include_once __DIR__.'/PhoneGeoData.php';
-include_once __DIR__.'/NumberBorder.php';
+namespace SergeyPreobrazhensky\PhoneGeoData;
 
 class PhoneGeoDataGetter {
     const RUSSIA = 'Россия';
