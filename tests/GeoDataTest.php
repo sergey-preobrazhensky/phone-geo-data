@@ -8,14 +8,23 @@ include_once __DIR__.'/../src/autoload.php';
  */
 class GeoDataTest extends TestCase
 {
-
-    public function testGeoData()
+    /**
+     * @dataProvider testGeoDataProvider
+     */
+    public function testGeoData($phone, $country, $region, $timeZone)
     {
         $phoneGeoDataParser = new PhoneGeoDataGetter('ru');
-        $phoneData = $phoneGeoDataParser->parse('+79190010001');
-        self::assertEquals('Россия', $phoneData->getCountry());
-        self::assertEquals('Владимирская область', $phoneData->getRegion());
-        self::assertEquals('+3:00', $phoneData->getTimeZone());
+        $phoneData = $phoneGeoDataParser->parse($phone);
+
+        self::assertEquals($country, $phoneData->getCountry());
+        self::assertEquals($region, $phoneData->getRegion());
+        self::assertEquals($timeZone, $phoneData->getTimeZone());
     }
 
+    public function testGeoDataProvider(){
+        return [
+            ['+79190010001', 'Россия', 'Владимирская область', '+3:00'],
+            ['+7 919 957-58-12', 'Россия', 'Тюменская область', '+5:00'],
+        ];
+    }
 }
