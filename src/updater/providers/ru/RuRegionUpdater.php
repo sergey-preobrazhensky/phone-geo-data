@@ -123,4 +123,48 @@ class RuRegionUpdater implements IUpdater {
     private function needIgnore($regionName) {
         return $regionName === 'Российская Федерация';
     }
+
+
+    private function addStationCodes() {
+        $standCodes = [];
+        $handle = fopen(__DIR__.'/station_codes.csv', "r");
+        while (($data = fgetcsv($handle, 1000000, ";")) !== FALSE) {
+            $newCodes = array_map(function($code) {
+                return '7'.$code  . '-' . '7'.$code;
+            }, explode(',', $data[0]));
+
+            $standCodes[$data[1]] = $newCodes;
+        }
+        fclose($handle);
+
+
+        $regions = [];
+        $handle = fopen(__DIR__.'/../../../lang/ru/region.csv', "r");
+        while (($data = fgetcsv($handle, 1000000, ",")) !== FALSE) {
+            $regions[$data[1]] = $data[0];
+        }
+        fclose($handle);
+
+        $standCodesReg = [];
+        foreach ($standCodes as $region => $codes) {
+            $standCodesReg[$regions[$region]] = $codes;
+        }
+
+        $codeValues = [];
+        $handle = fopen(__DIR__.'/../../../res/regionBorderNumber/ru.csv', "r");
+        while (($data = fgetcsv($handle, 1000000, ",")) !== FALSE) {
+            $codeValues[$data[0]] = $data;
+        }
+        fclose($handle);
+
+        foreach ($standCodesReg as $regionCode => $codes) {
+            $codeValues[$regionCode] = array_merge($codeValues[$regionCode], $codes);
+        }
+
+        $handle = fopen(__DIR__.'/../../../res/regionBorderNumber/ru.csv', "w");
+        foreach ($codeValues as $row) {
+            fputcsv($handle, $row);
+        }
+        fclose($handle);
+    }
 }
