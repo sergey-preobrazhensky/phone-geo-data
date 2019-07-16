@@ -7,7 +7,7 @@ class PhoneGeoDataGetter {
     /** @var NumberBorder[] */
     private $countryNumberBorders;
 
-    /** @var NumberBorder[][] */
+    /** @var NumberBorder[][][][] */
     private $regionNumberBorders;
 
     /** @var array */
@@ -34,14 +34,14 @@ class PhoneGeoDataGetter {
         $phone = preg_replace('/[^0-9]*/u', '', (string) $phone);
 
         if ($countryCode = $this->getCountryCode($phone)) {
-            $regionCode = $this->getRegionCode($phone, $countryCode);
+            list($regionCode, $operator) = $this->getRegionOperator($phone, $countryCode);
         } else {
-            $regionCode = '';
+            list($regionCode, $operator) = ['', ''];
         }
 
         $timeZone = $this->getTimeZone($countryCode, $regionCode);
 
-        return new PhoneGeoData($countryCode, $regionCode, $timeZone, $this->lang);
+        return new PhoneGeoData($countryCode, $regionCode, $timeZone, $operator, $this->lang);
     }
 
     /**
@@ -153,26 +153,28 @@ class PhoneGeoDataGetter {
     /**
      * @param $phone
      * @param $countryCode
-     * @return string
+     * @return string[]
      */
-    private function getRegionCode($phone, $countryCode)
+    private function getRegionOperator($phone, $countryCode)
     {
-        foreach ($this->getRegionNumberBorders($countryCode) as $regionCode => $borders) {
-            foreach ($borders as $borderItem) {
-                if ($borderItem->match($phone)) {
-                    return $regionCode;
+        foreach ($this->getNumberBorders($countryCode) as $regionCode => $operatorBorders) {
+            foreach ($operatorBorders as $operator => $borders) {
+                foreach ($borders as $borderItem) {
+                    if ($borderItem->match($phone)) {
+                        return [$regionCode, $operator];
+                    }
                 }
             }
         }
 
-        return '';
+        return ['',''];
     }
 
     /**
      * @param $countryCode
-     * @return NumberBorder[][]
+     * @return NumberBorder[][][]
      */
-    private function getRegionNumberBorders($countryCode)
+    private function getNumberBorders($countryCode)
     {
         if (empty($countryCode)) {
             return [];
@@ -185,6 +187,7 @@ class PhoneGeoDataGetter {
                 $regionNumberBorders = [];
                 while ($data = fgetcsv($fp)) {
                     $regionCode = array_shift($data);
+                    $operator = array_shift($data);
                     $borders = [];
                     foreach ($data as $borderItem) {
                         $border = explode('-', $borderItem);
@@ -193,7 +196,10 @@ class PhoneGeoDataGetter {
                         }
                         $borders[] = new NumberBorder($border[0], $border[1]);
                     }
-                    $regionNumberBorders[$regionCode] = $borders;
+                    if (isset($regionNumberBorders[$regionCode][$operator])) {
+                        $borders = array_merge($borders, $regionNumberBorders[$regionCode][$operator]);
+                    }
+                    $regionNumberBorders[$regionCode][$operator] = $borders;
                 }
                 $this->regionNumberBorders[$countryCode] = $regionNumberBorders;
             }

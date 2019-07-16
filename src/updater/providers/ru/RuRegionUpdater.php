@@ -29,19 +29,24 @@ class RuRegionUpdater implements IUpdater {
             if (count($row) <= 1) {
                 continue;
             }
-            list($def, $from, $to,,,$regionHrName) = array_map('trim', $row);
+            list($def, $from, $to,,$operator,$regionHrName) = array_map('trim', $row);
             if ($this->needIgnore($regionHrName)) {
                 continue;
             }
             $regionCode = $this->getRegionCode($regionHrName);
-            $result[$regionCode][] = self::RUSSIA_CODE.$def.$from.'-'.self::RUSSIA_CODE.$def.$to;
+            $result[$regionCode][$operator][] = self::RUSSIA_CODE.$def.$from.'-'.self::RUSSIA_CODE.$def.$to;
         }
         ksort($result);
-        foreach ($result as $regionCode => $borders) {
-            array_unshift($borders,$regionCode);
-            fputcsv($bordersOut, $borders);
+        foreach ($result as $regionCode => $operatorBorders) {
+            foreach ($operatorBorders as $operator => $borders) {
+                array_unshift($borders,$operator);
+                array_unshift($borders,$regionCode);
+                fputcsv($bordersOut, $borders);
+            }
         }
         fclose($bordersOut);
+
+        $this->addStationCodes();
     }
 
     /**
@@ -145,24 +150,16 @@ class RuRegionUpdater implements IUpdater {
         }
         fclose($handle);
 
+        
         $standCodesReg = [];
         foreach ($standCodes as $region => $codes) {
             $standCodesReg[$regions[$region]] = $codes;
         }
 
-        $codeValues = [];
-        $handle = fopen(__DIR__.'/../../../res/regionBorderNumber/ru.csv', "r");
-        while (($data = fgetcsv($handle, 1000000, ",")) !== FALSE) {
-            $codeValues[$data[0]] = $data;
-        }
-        fclose($handle);
-
-        foreach ($standCodesReg as $regionCode => $codes) {
-            $codeValues[$regionCode] = array_merge($codeValues[$regionCode], $codes);
-        }
-
-        $handle = fopen(__DIR__.'/../../../res/regionBorderNumber/ru.csv', "w");
-        foreach ($codeValues as $row) {
+        $handle = fopen(__DIR__.'/../../../res/regionBorderNumber/ru.csv', "a");
+        foreach ($standCodesReg as $regionCode => $row) {
+            array_unshift($row,'Городской телефон');
+            array_unshift($row,$regionCode);
             fputcsv($handle, $row);
         }
         fclose($handle);

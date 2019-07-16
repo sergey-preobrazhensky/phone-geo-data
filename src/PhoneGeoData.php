@@ -14,6 +14,9 @@ class PhoneGeoData
     /** @var string */
     private $timeZone;
 
+    /** @var string */
+    private $operator;
+
     /** @var array */
     private $hrCountries;
 
@@ -27,13 +30,15 @@ class PhoneGeoData
      * PhoneGeoData constructor.
      * @param string $country
      * @param string $region
+     * @param string $operator
      * @param string $timeZone
      */
-    public function __construct($countryCode, $regionCode, $timeZone, $lang)
+    public function __construct($countryCode, $regionCode, $timeZone, $operator, $lang)
     {
         $this->countryCode = $countryCode;
         $this->regionCode = $regionCode;
         $this->timeZone = $timeZone;
+        $this->operator = $operator;
         $this->lang = $lang;
     }
 
@@ -112,5 +117,13 @@ class PhoneGeoData
         }
 
         return $this->hrRegions;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOperator(): string
+    {
+        return $this->operator;
     }
 }
