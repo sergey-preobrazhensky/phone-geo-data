@@ -2,7 +2,7 @@
 
 // Update region data base for russian regions
 class RuRegionUpdater implements IUpdater {
-    const DATA_URL = 'https://www.rossvyaz.ru/docs/articles/Kody_DEF-9kh.csv';
+    const DATA_URL = 'https://rossvyaz.gov.ru/upload/gallery/315/63315_8f1c5a1d7c4fd1e0431c427ed3961439e962b01e.csv';
     const REGION_CODES_PATH = __DIR__.'/../../../lang/ru/region.csv';
     const REGION_ALIASES_PATH = __DIR__.'/regionAliases.csv';
     const REGION_BORDERS_PATH = __DIR__.'/../../../res/regionBorderNumber/ru.csv';
@@ -16,9 +16,14 @@ class RuRegionUpdater implements IUpdater {
         $tmpfname = tempnam("/tmp", "defCodes");
         file_put_contents(
             $tmpfname,
-            iconv('CP1251', 'UTF-8',
-                file_get_contents(self::DATA_URL)
-            )
+            file_get_contents(self::DATA_URL, false, stream_context_create(
+                [
+                    "ssl"=> [
+                        "verify_peer" => false,
+                        "verify_peer_name" => false,
+                    ]
+                ]
+            ))
         );
 
         $result = [];
@@ -104,12 +109,12 @@ class RuRegionUpdater implements IUpdater {
 
         $clearRegionName = $this->clearName($regionHrName);
 
-        $redionCodes = $this->getRegionCodesByHrName();
-        if (empty($redionCodes[$clearRegionName])) {
+        $regionCodes = $this->getRegionCodesByHrName();
+        if (empty($regionCodes[$clearRegionName])) {
             throw new Exception('Unknown region name "'.$regionHrName.'"');
         }
 
-        return $redionCodes[$clearRegionName];
+        return $regionCodes[$clearRegionName];
     }
 
     private function clearName($name)
@@ -117,7 +122,9 @@ class RuRegionUpdater implements IUpdater {
         $name = mb_strtolower($name);
         $chunks = explode('|', $name);
         $name = array_pop($chunks);
-        $name = preg_replace('/обл\.|область|край|республика|г\.|автономный округ| ао/u', '', $name);
+        $chunks = explode('*', $name);
+        $name = array_shift($chunks);
+        $name = preg_replace('/обл\.|область|край|республика|г\.|автономный округ|ао/u', '', $name);
         return preg_replace('/[^а-я]/u', '', $name);
     }
 
